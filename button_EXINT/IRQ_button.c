@@ -7,15 +7,17 @@
 #include "../pawns/pawns.h"
 #include "../timer/timer.h"
 #include "../move/move.h"
+#include "../game/game.h"
+
 volatile int i = 0;
 volatile int j = 0;
 volatile int count = 0;
 volatile int count2 = 0;
 volatile int h = 0;
 volatile int h2 = 0;
-int oldMove1;
-int oldMove0;
-extern int currentPlayer;
+
+
+extern struct GameInfo globalGameInfo;
 
 extern int downKey1;
 extern int downKey2;
@@ -146,7 +148,7 @@ void buttonEint0(){
 	//draw_wall_wrapper(0x011DF05, false);
 	//draw_wall_wrapper(0x011BE05, false);
 	
-	//markMoves(oldMove0);
+	//markMoves(globalGameInfo.oldMove0);
 	//Enable del bottone key1, pulizia pending
 	LPC_SC->EXTINT &= (1 << 1);
 	NVIC_ClearPendingIRQ(EINT1_IRQn);
@@ -164,11 +166,11 @@ void buttonEint1(){
 	removeMarkedMoves(blocchi_gialli, &size);
 	pawnMoved();
 	
-	if(finishedWalls(currentPlayer)){
-		writeWarningMessage(currentPlayer, false);
+	if(finishedWalls(globalGameInfo.currentPlayer)){
+		writeWarningMessage(globalGameInfo.currentPlayer, false);
 	}
 	
-	defaultCenteredWall = currentPlayer==1 ? 0x1119D68 : 0x0119D68;	
+	defaultCenteredWall = globalGameInfo.currentPlayer==1 ? 0x1119D68 : 0x0119D68;	
 	
 	while(!checkPosition(defaultCenteredWall, 0x0)){
 		xW = defaultCenteredWall & 0xFF;

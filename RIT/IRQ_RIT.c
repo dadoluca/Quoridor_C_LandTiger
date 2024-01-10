@@ -15,7 +15,7 @@
 #include "../walls/walls.h"
 #include "../board/board.h"
 #include "../button_EXINT/button.h"
-
+#include "../game/game.h"
 /******************************************************************************
 ** Function name:		RIT_IRQHandler
 **
@@ -25,6 +25,7 @@
 ** Returned value:		None
 **
 ******************************************************************************/
+extern struct GameInfo globalGameInfo;
 
 int id = 1;
 
@@ -32,8 +33,7 @@ volatile int downKey1=0;
 volatile int downKey2=0;
 volatile int downKey0=0;
 
-extern int oldMove1;
-extern int oldMove0;
+
 int lastMoveTmp;
 int m;
 extern int defaultCenteredWall;
@@ -41,13 +41,11 @@ int lastWallMoveTmp;
 extern bool reset;
 int yCoor;
 
-
-extern int currentPlayer; 	
+	
 extern bool reset;
 extern int wallMode;
 extern int blocchi_gialli[4];
 extern int size;
-extern int currentPlayer;
 int currentWallMoveTmp=0;
 
 
@@ -57,19 +55,19 @@ void confirmMove(){
 	reset_timer(1);
 	enable_timer(1);
 	if(wallMode == 0){//pawn
-		if(currentPlayer == 0) {//player 0
-			oldMove0 = m != 0 ? m : oldMove0;
-			movePawns(oldMove0,false);
-			markMoves(oldMove1, blocchi_gialli, &size, oldMove0);
+		if(globalGameInfo.currentPlayer == 0) {//player 0
+			globalGameInfo.oldMove0 = m != 0 ? m : globalGameInfo.oldMove0;
+			movePawns(globalGameInfo.oldMove0,false);
+			markMoves(globalGameInfo.oldMove1, blocchi_gialli, &size, globalGameInfo.oldMove0);
 		} else { //player 1
-			oldMove1 = m != 0 ? m : oldMove1;
-			movePawns(oldMove1,false);
-			markMoves(oldMove0, blocchi_gialli, &size, oldMove1);
+			globalGameInfo.oldMove1 = m != 0 ? m : globalGameInfo.oldMove1;
+			movePawns(globalGameInfo.oldMove1,false);
+			markMoves(globalGameInfo.oldMove0, blocchi_gialli, &size, globalGameInfo.oldMove1);
 		}
 	}
 	else{//wall
-		oldMove0 = m != 0 ? m : oldMove0;
-		oldMove1 = m != 0 ? m : oldMove1;
+		globalGameInfo.oldMove0 = m != 0 ? m : globalGameInfo.oldMove0;
+		globalGameInfo.oldMove1 = m != 0 ? m : globalGameInfo.oldMove1;
 		if(lastWallMoveTmp != 0){
 			globalWalls.wallsList[globalWalls.index] = lastWallMoveTmp;
 			globalWalls.index = globalWalls.index + 1;
@@ -79,16 +77,16 @@ void confirmMove(){
 			globalWalls.index = globalWalls.index + 1;
 		}
 		lastWallMoveTmp=0;
-		if(currentPlayer == 0) {
-			markMoves(oldMove1, blocchi_gialli, &size, oldMove0);
+		if(globalGameInfo.currentPlayer == 0) {
+			markMoves(globalGameInfo.oldMove1, blocchi_gialli, &size, globalGameInfo.oldMove0);
 		} else {
-			markMoves(oldMove0, blocchi_gialli, &size, oldMove1);
+			markMoves(globalGameInfo.oldMove0, blocchi_gialli, &size, globalGameInfo.oldMove1);
 		}
 		//controllo per fine muri
-		updateCountWalls(currentPlayer);
-		writeWarningMessage(currentPlayer, true);		
+		updateCountWalls(globalGameInfo.currentPlayer);
+		writeWarningMessage(globalGameInfo.currentPlayer, true);		
 	}
-	currentPlayer = currentPlayer==1 ? 0 : 1;
+	globalGameInfo.currentPlayer = globalGameInfo.currentPlayer==1 ? 0 : 1;
 	wallMode=0;
 	NVIC_DisableIRQ(EINT2_IRQn);	//Disable del bottone key2
 	//Abilito il key1, con il clear del pending
@@ -110,23 +108,23 @@ void RIT_IRQHandler (void)
 		up++;
 		switch(up){
 			case 1:
-				if(currentPlayer == 1){//player 1
+				if(globalGameInfo.currentPlayer == 1){//player 1
 					if(wallMode == 0){//pawn
-						lastMoveTmp = m == 0 ? oldMove1 : m;
- 					if(!checkWall(oldMove1, 3)){
-						m = oldMove1;
+						lastMoveTmp = m == 0 ? globalGameInfo.oldMove1 : m;
+ 					if(!checkWall(globalGameInfo.oldMove1, 3)){
+						m = globalGameInfo.oldMove1;
 						updateMovePlayer(&m,1);
 						updateMovePlayerWall(&m,true);
-						if(!checkPlayerNearOverTmp(oldMove1, oldMove0) && !checkWallsOverTmp(oldMove1, oldMove0)) {
+						if(!checkPlayerNearOverTmp(globalGameInfo.oldMove1, globalGameInfo.oldMove0) && !checkWallsOverTmp(globalGameInfo.oldMove1, globalGameInfo.oldMove0)) {
 							updateMoveUp(&m);
-							if(m != oldMove1) {movePawns(lastMoveTmp, true);}
-						} else if(checkPlayerNearOverTmp(oldMove1, oldMove0) && !checkWallsOverTmp(oldMove1, oldMove0)) {
+							if(m != globalGameInfo.oldMove1) {movePawns(lastMoveTmp, true);}
+						} else if(checkPlayerNearOverTmp(globalGameInfo.oldMove1, globalGameInfo.oldMove0) && !checkWallsOverTmp(globalGameInfo.oldMove1, globalGameInfo.oldMove0)) {
 							updateMoveUpPlayer(&m);
-							if(m != oldMove1) {movePawns(oldMove1, true);}
+							if(m != globalGameInfo.oldMove1) {movePawns(globalGameInfo.oldMove1, true);}
 						} else { m = lastMoveTmp;}
 						
-						if(m != oldMove1) {
-							markMoves(oldMove1, blocchi_gialli, &size, oldMove0);
+						if(m != globalGameInfo.oldMove1) {
+							markMoves(globalGameInfo.oldMove1, blocchi_gialli, &size, globalGameInfo.oldMove0);
 							movePawns(m, false);
 						}
 					}
@@ -135,7 +133,7 @@ void RIT_IRQHandler (void)
 						currentWallMoveTmp = lastWallMoveTmp;
 						updateMovePlayer(&currentWallMoveTmp,1);//player a 1
 						updateMoveUp(&currentWallMoveTmp);//move wall up 
-						if(checkPosition(currentWallMoveTmp, oldMove1) && checkPermanentPositionWall(oldMove0, currentWallMoveTmp) && checkPermanentPositionWall(oldMove1, currentWallMoveTmp)){
+						if(checkPosition(currentWallMoveTmp, globalGameInfo.oldMove1) && checkPermanentPositionWall(globalGameInfo.oldMove0, currentWallMoveTmp) && checkPermanentPositionWall(globalGameInfo.oldMove1, currentWallMoveTmp)){
 							draw_wall_wrapper(lastWallMoveTmp,true); //cancella muro vecchio
 							draw_wall_wrapper(currentWallMoveTmp,false);//disegno nuovo muro
 							lastWallMoveTmp = currentWallMoveTmp;
@@ -143,20 +141,20 @@ void RIT_IRQHandler (void)
 					}
 				} else{//player 0
 					if(wallMode == 0){//pawn
-						lastMoveTmp = m == 0 ? oldMove0 : m;
-					if(!checkWall(oldMove0, 3)){
-						m = oldMove0;
+						lastMoveTmp = m == 0 ? globalGameInfo.oldMove0 : m;
+					if(!checkWall(globalGameInfo.oldMove0, 3)){
+						m = globalGameInfo.oldMove0;
 						updateMovePlayer(&m,0);
 						updateMovePlayerWall(&m,true);
-						if(!checkPlayerNearOverTmp(oldMove0, oldMove1) && !checkWallsOverTmp(oldMove0, oldMove1)) {
+						if(!checkPlayerNearOverTmp(globalGameInfo.oldMove0, globalGameInfo.oldMove1) && !checkWallsOverTmp(globalGameInfo.oldMove0, globalGameInfo.oldMove1)) {
 							updateMoveUp(&m);
-							if(m != oldMove0) {movePawns(lastMoveTmp, true);}
-						} else if(checkPlayerNearOverTmp(oldMove0, oldMove1) && !checkWallsOverTmp(oldMove0, oldMove1)){
+							if(m != globalGameInfo.oldMove0) {movePawns(lastMoveTmp, true);}
+						} else if(checkPlayerNearOverTmp(globalGameInfo.oldMove0, globalGameInfo.oldMove1) && !checkWallsOverTmp(globalGameInfo.oldMove0, globalGameInfo.oldMove1)){
 							updateMoveUpPlayer(&m);
-							if(m != oldMove0) {movePawns(oldMove0, true);}
+							if(m != globalGameInfo.oldMove0) {movePawns(globalGameInfo.oldMove0, true);}
 						} else { m = lastMoveTmp;}
-						if(m != oldMove0) {
-							markMoves(oldMove0, blocchi_gialli, &size, oldMove1);
+						if(m != globalGameInfo.oldMove0) {
+							markMoves(globalGameInfo.oldMove0, blocchi_gialli, &size, globalGameInfo.oldMove1);
 							movePawns(m, false);
 						}
 						}
@@ -165,7 +163,7 @@ void RIT_IRQHandler (void)
 						currentWallMoveTmp = lastWallMoveTmp;
 						updateMovePlayer(&currentWallMoveTmp,0);//player a 0
 						updateMoveUp(&currentWallMoveTmp);//move wall up 
-						if(checkPosition(currentWallMoveTmp, oldMove0) && checkPermanentPositionWall(oldMove0, currentWallMoveTmp) && checkPermanentPositionWall(oldMove1, currentWallMoveTmp)){//TODO: sostituire true con il controllo sul posizionamento del muro
+						if(checkPosition(currentWallMoveTmp, globalGameInfo.oldMove0) && checkPermanentPositionWall(globalGameInfo.oldMove0, currentWallMoveTmp) && checkPermanentPositionWall(globalGameInfo.oldMove1, currentWallMoveTmp)){//TODO: sostituire true con il controllo sul posizionamento del muro
 							draw_wall_wrapper(lastWallMoveTmp,true); //cancella muro vecchio
 							draw_wall_wrapper(currentWallMoveTmp,false);//disegno nuovo muro
 							lastWallMoveTmp = currentWallMoveTmp;
@@ -186,16 +184,16 @@ void RIT_IRQHandler (void)
 		right++;
 		switch(right){
 			case 1:
-				if(currentPlayer == 1){
+				if(globalGameInfo.currentPlayer == 1){
 					if(wallMode == 0){//pawn
-						lastMoveTmp = m == 0 ? oldMove1 : m;
-					if(!checkWall(oldMove1, 0) && !checkRightTmp(oldMove1, oldMove0)){
-						m = oldMove1;
+						lastMoveTmp = m == 0 ? globalGameInfo.oldMove1 : m;
+					if(!checkWall(globalGameInfo.oldMove1, 0) && !checkRightTmp(globalGameInfo.oldMove1, globalGameInfo.oldMove0)){
+						m = globalGameInfo.oldMove1;
 						updateMovePlayer(&m,1);
 						updateMovePlayerWall(&m,true);
 						updateMoveRight(&m);
 						movePawns(lastMoveTmp, true);
-						markMoves(oldMove1, blocchi_gialli, &size, oldMove0);
+						markMoves(globalGameInfo.oldMove1, blocchi_gialli, &size, globalGameInfo.oldMove0);
 						movePawns(m,false);
 					}
 					}else{//wall
@@ -203,7 +201,7 @@ void RIT_IRQHandler (void)
 						currentWallMoveTmp = lastWallMoveTmp;
 						updateMovePlayer(&currentWallMoveTmp,1);//player a 1
 						updateMoveRight(&currentWallMoveTmp);//move wall up 
-						if(checkPosition(currentWallMoveTmp, oldMove1) && checkPermanentPositionWall(oldMove0, currentWallMoveTmp) && checkPermanentPositionWall(oldMove1, currentWallMoveTmp)){//TODO: sostituire true con il controllo sul posizionamento del muro
+						if(checkPosition(currentWallMoveTmp, globalGameInfo.oldMove1) && checkPermanentPositionWall(globalGameInfo.oldMove0, currentWallMoveTmp) && checkPermanentPositionWall(globalGameInfo.oldMove1, currentWallMoveTmp)){//TODO: sostituire true con il controllo sul posizionamento del muro
 							draw_wall_wrapper(lastWallMoveTmp,true); //cancella muro vecchio
 							draw_wall_wrapper(currentWallMoveTmp,false);//disegno nuovo muro
 							lastWallMoveTmp = currentWallMoveTmp;
@@ -211,14 +209,14 @@ void RIT_IRQHandler (void)
 					}
 				} else{
 					if(wallMode == 0){//pawn
-						lastMoveTmp = m == 0 ? oldMove0 : m;
-					if(!checkWall(oldMove0, 0) && !checkRightTmp(oldMove0, oldMove1)){
-						m = oldMove0;
+						lastMoveTmp = m == 0 ? globalGameInfo.oldMove0 : m;
+					if(!checkWall(globalGameInfo.oldMove0, 0) && !checkRightTmp(globalGameInfo.oldMove0, globalGameInfo.oldMove1)){
+						m = globalGameInfo.oldMove0;
 						updateMovePlayer(&m,0);
 						updateMovePlayerWall(&m,true);
 						updateMoveRight(&m);
 						movePawns(lastMoveTmp, true);
-						markMoves(oldMove0, blocchi_gialli, &size, oldMove1);
+						markMoves(globalGameInfo.oldMove0, blocchi_gialli, &size, globalGameInfo.oldMove1);
 						movePawns(m,false);
 					}
 					}else{//wall
@@ -226,7 +224,7 @@ void RIT_IRQHandler (void)
 						currentWallMoveTmp = lastWallMoveTmp;
 						updateMovePlayer(&currentWallMoveTmp,0);//player a 0
 						updateMoveRight(&currentWallMoveTmp);//move wall up 
-						if(checkPosition(currentWallMoveTmp, oldMove0) && checkPermanentPositionWall(oldMove0, currentWallMoveTmp) && checkPermanentPositionWall(oldMove1, currentWallMoveTmp)){//TODO: sostituire true con il controllo sul posizionamento del muro
+						if(checkPosition(currentWallMoveTmp, globalGameInfo.oldMove0) && checkPermanentPositionWall(globalGameInfo.oldMove0, currentWallMoveTmp) && checkPermanentPositionWall(globalGameInfo.oldMove1, currentWallMoveTmp)){//TODO: sostituire true con il controllo sul posizionamento del muro
 							draw_wall_wrapper(lastWallMoveTmp,true); //cancella muro vecchio
 							draw_wall_wrapper(currentWallMoveTmp,false);//disegno nuovo muro
 							lastWallMoveTmp = currentWallMoveTmp;
@@ -246,16 +244,16 @@ void RIT_IRQHandler (void)
 		left++;
 		switch(left){
 			case 1:
-				if(currentPlayer == 1){
+				if(globalGameInfo.currentPlayer == 1){
 					if(wallMode == 0){//pawn
-						lastMoveTmp = m == 0 ? oldMove1 : m;
-					if(!checkWall(oldMove1, 2) && !checkLeftTmp(oldMove1, oldMove0)){
-						m = oldMove1;
+						lastMoveTmp = m == 0 ? globalGameInfo.oldMove1 : m;
+					if(!checkWall(globalGameInfo.oldMove1, 2) && !checkLeftTmp(globalGameInfo.oldMove1, globalGameInfo.oldMove0)){
+						m = globalGameInfo.oldMove1;
 						updateMovePlayer(&m,1);
 						updateMovePlayerWall(&m,true);
 						updateMoveLeft(&m);
 						movePawns(lastMoveTmp, true);
-						markMoves(oldMove1, blocchi_gialli, &size, oldMove0);
+						markMoves(globalGameInfo.oldMove1, blocchi_gialli, &size, globalGameInfo.oldMove0);
 						movePawns(m,false);
 					}
 					}else{//wall
@@ -263,7 +261,7 @@ void RIT_IRQHandler (void)
 						currentWallMoveTmp = lastWallMoveTmp;
 						updateMovePlayer(&currentWallMoveTmp,1);//player a 1
 						updateMoveLeft(&currentWallMoveTmp);//move wall up 
-						if(checkPosition(currentWallMoveTmp, oldMove1) && checkPermanentPositionWall(oldMove0, currentWallMoveTmp) && checkPermanentPositionWall(oldMove1, currentWallMoveTmp)){//TODO: sostituire true con il controllo sul posizionamento del muro
+						if(checkPosition(currentWallMoveTmp, globalGameInfo.oldMove1) && checkPermanentPositionWall(globalGameInfo.oldMove0, currentWallMoveTmp) && checkPermanentPositionWall(globalGameInfo.oldMove1, currentWallMoveTmp)){//TODO: sostituire true con il controllo sul posizionamento del muro
 							draw_wall_wrapper(lastWallMoveTmp,true); //cancella muro vecchio
 							draw_wall_wrapper(currentWallMoveTmp,false);//disegno nuovo muro
 							lastWallMoveTmp = currentWallMoveTmp;
@@ -271,14 +269,14 @@ void RIT_IRQHandler (void)
 					}
 				} else{//player 0
 					if(wallMode == 0){//pawn
-						lastMoveTmp = m == 0 ? oldMove0 : m;
-					if(!checkWall(oldMove0, 2) && !checkLeftTmp(oldMove0, oldMove1)){
-						m = oldMove0;
+						lastMoveTmp = m == 0 ? globalGameInfo.oldMove0 : m;
+					if(!checkWall(globalGameInfo.oldMove0, 2) && !checkLeftTmp(globalGameInfo.oldMove0, globalGameInfo.oldMove1)){
+						m = globalGameInfo.oldMove0;
 						updateMovePlayer(&m,0);
 						updateMovePlayerWall(&m,true);
 						updateMoveLeft(&m);
 						movePawns(lastMoveTmp, true);
-						markMoves(oldMove0, blocchi_gialli, &size, oldMove1);
+						markMoves(globalGameInfo.oldMove0, blocchi_gialli, &size, globalGameInfo.oldMove1);
 						movePawns(m,false);
 						}
 					}else{//wall
@@ -286,7 +284,7 @@ void RIT_IRQHandler (void)
 						currentWallMoveTmp = lastWallMoveTmp;
 						updateMovePlayer(&currentWallMoveTmp,0);//player a 0
 						updateMoveLeft(&currentWallMoveTmp);//move wall up 
-						if(checkPosition(currentWallMoveTmp, oldMove0) && checkPermanentPositionWall(oldMove0, currentWallMoveTmp) && checkPermanentPositionWall(oldMove1, currentWallMoveTmp)){//TODO: sostituire true con il controllo sul posizionamento del muro
+						if(checkPosition(currentWallMoveTmp, globalGameInfo.oldMove0) && checkPermanentPositionWall(globalGameInfo.oldMove0, currentWallMoveTmp) && checkPermanentPositionWall(globalGameInfo.oldMove1, currentWallMoveTmp)){//TODO: sostituire true con il controllo sul posizionamento del muro
 							draw_wall_wrapper(lastWallMoveTmp,true); //cancella muro vecchio
 							draw_wall_wrapper(currentWallMoveTmp,false);//disegno nuovo muro
 							lastWallMoveTmp = currentWallMoveTmp;
@@ -307,22 +305,22 @@ void RIT_IRQHandler (void)
 		downJ++;
 		switch(downJ){
 			case 1:
-				if(currentPlayer == 1){
+				if(globalGameInfo.currentPlayer == 1){
 					if(wallMode == 0){//pawn
-						lastMoveTmp = m == 0 ? oldMove1 : m;
-					if(!checkWall(oldMove1, 1)){
-						m = oldMove1;
+						lastMoveTmp = m == 0 ? globalGameInfo.oldMove1 : m;
+					if(!checkWall(globalGameInfo.oldMove1, 1)){
+						m = globalGameInfo.oldMove1;
 						updateMovePlayer(&m,1);
 						updateMovePlayerWall(&m,true);
-						if(!checkPlayerNearUnderTmp(oldMove1, oldMove0) && !checkWallsUnderTmp(oldMove1, oldMove0)) {
+						if(!checkPlayerNearUnderTmp(globalGameInfo.oldMove1, globalGameInfo.oldMove0) && !checkWallsUnderTmp(globalGameInfo.oldMove1, globalGameInfo.oldMove0)) {
 							updateMoveDown(&m);
-							if(m != oldMove1) {movePawns(lastMoveTmp, true);}
-						} else if(checkPlayerNearUnderTmp(oldMove1, oldMove0) && !checkWallsUnderTmp(oldMove1, oldMove0)) {
+							if(m != globalGameInfo.oldMove1) {movePawns(lastMoveTmp, true);}
+						} else if(checkPlayerNearUnderTmp(globalGameInfo.oldMove1, globalGameInfo.oldMove0) && !checkWallsUnderTmp(globalGameInfo.oldMove1, globalGameInfo.oldMove0)) {
 							updateMoveDownPlayer(&m);
-							if(m != oldMove1) {movePawns(oldMove1, true);}
+							if(m != globalGameInfo.oldMove1) {movePawns(globalGameInfo.oldMove1, true);}
 						} else { m = lastMoveTmp;}
-						if(m != oldMove1) {
-							markMoves(oldMove1, blocchi_gialli, &size, oldMove0);
+						if(m != globalGameInfo.oldMove1) {
+							markMoves(globalGameInfo.oldMove1, blocchi_gialli, &size, globalGameInfo.oldMove0);
 							movePawns(m, false);
 						}
 					}
@@ -331,7 +329,7 @@ void RIT_IRQHandler (void)
 						currentWallMoveTmp = lastWallMoveTmp;
 						updateMovePlayer(&currentWallMoveTmp,1);//player a 1
 						updateMoveDown(&currentWallMoveTmp);//move wall up 
-						if(checkPosition(currentWallMoveTmp, oldMove1) && checkPermanentPositionWall(oldMove0, currentWallMoveTmp) && checkPermanentPositionWall(oldMove1, currentWallMoveTmp)){//TODO: sostituire true con il controllo sul posizionamento del muro
+						if(checkPosition(currentWallMoveTmp, globalGameInfo.oldMove1) && checkPermanentPositionWall(globalGameInfo.oldMove0, currentWallMoveTmp) && checkPermanentPositionWall(globalGameInfo.oldMove1, currentWallMoveTmp)){//TODO: sostituire true con il controllo sul posizionamento del muro
 							draw_wall_wrapper(lastWallMoveTmp,true); //cancella muro vecchio
 							draw_wall_wrapper(currentWallMoveTmp,false);//disegno nuovo muro
 							lastWallMoveTmp = currentWallMoveTmp;
@@ -339,20 +337,20 @@ void RIT_IRQHandler (void)
 					}
 				} else{ //Player 0
 					if(wallMode == 0){//pawn
-						lastMoveTmp = m == 0 ? oldMove0 : m;
-					if(!checkWall(oldMove0, 1)){
-						m = oldMove0;
+						lastMoveTmp = m == 0 ? globalGameInfo.oldMove0 : m;
+					if(!checkWall(globalGameInfo.oldMove0, 1)){
+						m = globalGameInfo.oldMove0;
 						updateMovePlayer(&m,0);
 						updateMovePlayerWall(&m,true);
-						if(!checkPlayerNearUnderTmp(oldMove0, oldMove1) && !checkWallsUnderTmp(oldMove0, oldMove1)) {
+						if(!checkPlayerNearUnderTmp(globalGameInfo.oldMove0, globalGameInfo.oldMove1) && !checkWallsUnderTmp(globalGameInfo.oldMove0, globalGameInfo.oldMove1)) {
 							updateMoveDown(&m);
-							if(m != oldMove0) {movePawns(lastMoveTmp, true);}
-						} else if(checkPlayerNearUnderTmp(oldMove0, oldMove1) && !checkWallsUnderTmp(oldMove0, oldMove1)) {
+							if(m != globalGameInfo.oldMove0) {movePawns(lastMoveTmp, true);}
+						} else if(checkPlayerNearUnderTmp(globalGameInfo.oldMove0, globalGameInfo.oldMove1) && !checkWallsUnderTmp(globalGameInfo.oldMove0, globalGameInfo.oldMove1)) {
 							updateMoveDownPlayer(&m);
-							if(m != oldMove0) {movePawns(oldMove0, true);}
+							if(m != globalGameInfo.oldMove0) {movePawns(globalGameInfo.oldMove0, true);}
 						} else { m = lastMoveTmp;}
-						if(m != oldMove0) {
-							markMoves(oldMove0, blocchi_gialli, &size, oldMove1);
+						if(m != globalGameInfo.oldMove0) {
+							markMoves(globalGameInfo.oldMove0, blocchi_gialli, &size, globalGameInfo.oldMove1);
 							movePawns(m,false);
 						}
 						}
@@ -361,7 +359,7 @@ void RIT_IRQHandler (void)
 						currentWallMoveTmp = lastWallMoveTmp;
 						updateMovePlayer(&currentWallMoveTmp,0);//player a 0
 						updateMoveDown(&currentWallMoveTmp);//move wall up 
-						if(checkPosition(currentWallMoveTmp, oldMove0) && checkPermanentPositionWall(oldMove0, currentWallMoveTmp) && checkPermanentPositionWall(oldMove1, currentWallMoveTmp)){//TODO: sostituire true con il controllo sul posizionamento del muro
+						if(checkPosition(currentWallMoveTmp, globalGameInfo.oldMove0) && checkPermanentPositionWall(globalGameInfo.oldMove0, currentWallMoveTmp) && checkPermanentPositionWall(globalGameInfo.oldMove1, currentWallMoveTmp)){//TODO: sostituire true con il controllo sul posizionamento del muro
 							draw_wall_wrapper(lastWallMoveTmp,true); //cancella muro vecchio
 							draw_wall_wrapper(currentWallMoveTmp,false);//disegno nuovo muro
 							lastWallMoveTmp = currentWallMoveTmp;

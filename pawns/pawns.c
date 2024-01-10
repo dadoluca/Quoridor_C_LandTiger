@@ -6,20 +6,18 @@
 #include "../walls/walls.h"
 #include <stdbool.h>
 #include "../timer/timer.h"
-#include "../button_EXINT/button.h"
 #include "../joystick/joystick.h"
+#include "../game/game.h"
 
+extern struct GameInfo globalGameInfo;
 
 volatile int x;
 volatile int y;
 volatile int user;
 bool vertical = false;
-extern int currentPlayer;
 int k;
 int xCoord;
 int yCoord;
-extern int oldMove0;
-extern int oldMove1;
 extern int m;
 
 
@@ -366,17 +364,17 @@ void endGame(int position) {
 
 
 void pawnMoved() {
-	if(currentPlayer == 0) {
+	if(globalGameInfo.currentPlayer == 0) {
 		if(m != 0) {
 			movePawns(m, true);
 			m = 0;
-			movePawns(oldMove0, false);
+			movePawns(globalGameInfo.oldMove0, false);
 		}
 	} else {
 		if(m != 0) {
 			movePawns(m, true);
 			m = 0;
-			movePawns(oldMove1, false);
+			movePawns(globalGameInfo.oldMove1, false);
 		}
 	}
 }

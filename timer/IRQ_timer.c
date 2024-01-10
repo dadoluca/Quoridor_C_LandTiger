@@ -29,11 +29,8 @@
 ******************************************************************************/
 int sec = 20;
 bool reset = false;
-int currentPlayer = 0;
 
 extern int lastMoveTmp;
-extern int oldMove0;
-extern int oldMove1;
 extern int m;
 
 extern int oldWallMove1;

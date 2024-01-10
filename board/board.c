@@ -3,10 +3,12 @@
 #include <stdbool.h>
 #include "../pawns/pawns.h"
 #include "../walls/walls.h"
-int getIndexPawn(int posOldMove);
+
 extern struct walls globalWalls;
-extern int currentPlayer;
 extern int defaultCenteredWall;
+
+int getIndexPawn(int posOldMove);
+
 
 // TODO: verificare correttezza terza colonna
 const int matPos[] = {

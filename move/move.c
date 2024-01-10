@@ -1,9 +1,10 @@
 #include <stdbool.h>
 #include "../pawns/pawns.h"
+#include "../game/game.h"
+
+extern struct GameInfo globalGameInfo;
 
 volatile unsigned int move;
-extern int oldMove0;
-extern int oldMove1;
 extern int blocchi_gialli[4];
 extern int size;
 int base0;
@@ -167,9 +168,9 @@ void updateMoveLeftPlayer(int*	move) {
 }
 
 void initialPosition(){
-	oldMove0 = 0x0000E971;
-	base0 = oldMove0;
-	oldMove1 = 0x01002371;
-	base1 = oldMove1;
-	markMoves(oldMove0, blocchi_gialli, &size, oldMove1);
+	globalGameInfo.oldMove0 = 0x0000E971;
+	base0 = globalGameInfo.oldMove0;
+	globalGameInfo.oldMove1 = 0x01002371;
+	base1 = globalGameInfo.oldMove1;
+	markMoves(globalGameInfo.oldMove0, blocchi_gialli, &size, globalGameInfo.oldMove1);
 }
