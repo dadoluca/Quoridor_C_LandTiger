@@ -364,17 +364,17 @@ void endGame(int position) {
 
 
 void pawnMoved() {
-	if(globalGameInfo.currentPlayer == 0) {
+	if(globalGameInfo.current_turn_player == 0) {
 		if(m != 0) {
 			movePawns(m, true);
 			m = 0;
-			movePawns(globalGameInfo.oldMove0, false);
+			movePawns(globalGameInfo.last_move_p0, false);
 		}
 	} else {
 		if(m != 0) {
 			movePawns(m, true);
 			m = 0;
-			movePawns(globalGameInfo.oldMove1, false);
+			movePawns(globalGameInfo.last_move_p1, false);
 		}
 	}
 }

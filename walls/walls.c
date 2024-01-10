@@ -2,8 +2,10 @@
 #include <stdio.h>
 #include "walls.h"
 #include "../GLCD/GLCD.h"
+#include "../game/game.h"
+
 #define UPPERSPACE 29
-struct walls globalWalls;  
+extern struct Walls globalWalls;  
 
 void draw_wall(int posX_start, int posY_start, int posX_end, int posY_end, int vertical, int player, bool cancel);
 void draw_wall_wrapper(int move, bool cancel);

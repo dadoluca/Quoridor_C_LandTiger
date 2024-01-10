@@ -168,9 +168,9 @@ void updateMoveLeftPlayer(int*	move) {
 }
 
 void initialPosition(){
-	globalGameInfo.oldMove0 = 0x0000E971;
-	base0 = globalGameInfo.oldMove0;
-	globalGameInfo.oldMove1 = 0x01002371;
-	base1 = globalGameInfo.oldMove1;
-	markMoves(globalGameInfo.oldMove0, blocchi_gialli, &size, globalGameInfo.oldMove1);
+	globalGameInfo.last_move_p0 = 0x0000E971;
+	base0 = globalGameInfo.last_move_p0;
+	globalGameInfo.last_move_p1 = 0x01002371;
+	base1 = globalGameInfo.last_move_p1;
+	markMoves(globalGameInfo.last_move_p0, blocchi_gialli, &size, globalGameInfo.last_move_p1);
 }

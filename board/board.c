@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "../pawns/pawns.h"
-#include "../walls/walls.h"
+#include "../game/game.h"
 
-extern struct walls globalWalls;
+extern struct Walls globalWalls;
 extern int defaultCenteredWall;
 
 int getIndexPawn(int posOldMove);
