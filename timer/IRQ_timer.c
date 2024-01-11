@@ -30,15 +30,7 @@
 int sec = 20;
 bool reset = false;
 
-extern int lastMoveTmp;
 extern int m;
-
-extern int oldWallMove1;
-extern int oldWallMove0;
-extern int lastWallMoveTmp;
-
-int blocchi_gialli[4];
-int size;
 
 void updateSec(uint8_t* sec) {
 	GUI_Text(105, 287, sec, Black, White);

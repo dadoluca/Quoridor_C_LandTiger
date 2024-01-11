@@ -16,14 +16,15 @@ bool checkPlayerNearOverTmp(int, int);
 bool checkPlayerNearUnder(int, int, int);
 bool checkPlayerNearUnderTmp(int, int);
 bool checkPlayerNearRight(int, int, int);
+bool checkPlayerNearDirectionTmp(int,int,int);
 bool checkRightTmp(int, int);
 bool checkPlayerNearLeft(int, int, int);
 bool checkLeftTmp(int, int);
 bool checkWallsOver(int, int);
 bool checkWallsUnder(int, int);
+bool checkWallsTmpInDirection(int,int,int);
 bool checkWallsUnderTmp(int, int);
 bool checkWallsOverTmp(int, int);
 bool pawsArrived(int);
 void endGame(int);
 void pawnMoved(void);
-

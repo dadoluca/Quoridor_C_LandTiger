@@ -17,15 +17,41 @@ void initGame();
 void initGame(){ //init global variables and draw board
 	globalGameInfo.current_turn_player=0;
 	globalWalls.index = 0;
-	globalGameInfo.current_move_mode = WALL_MODE;
+	globalGameInfo.current_move_mode = TOKEN_MODE;
 	
 	drawInitBoard();
 	drawInitTokens();
 }
 
 static void drawInitTokens(){
-	GUI_Text(113, 233, (uint8_t *) " ", White, Red);
-	GUI_Text(113, 35, (uint8_t *) " ", White, Blue);
+	int i;
+	//---------------------------------------- draws PLAYER_0
+	int posX=113;
+	int posY=233;
+	for(i=0;i<17;i++){	
+		LCD_DrawLine(posX, posY, posX+10, posY , Green);
+		if(i>=4 && i<=6){
+			LCD_DrawLine(posX+2, posY, posX+4, posY , Black);
+			LCD_DrawLine(posX+6, posY, posX+8, posY , Black);
+		}else if(i>=11 && i<=13){
+			LCD_DrawLine(posX+2, posY, posX+8, posY , Red);
+		}
+		posY++;
+	}
+	
+	//---------------------------------------- draws PLAYER_1
+	posY=35;
+	for(i=0;i<17;i++){	
+		LCD_DrawLine(posX, posY, posX+10, posY , Blue);
+		if(i>=4 && i<=6){
+			LCD_DrawLine(posX+2, posY, posX+4, posY , White);
+			LCD_DrawLine(posX+6, posY, posX+8, posY , White);
+		}else if(i>=11 && i<=13){
+			LCD_DrawLine(posX+2, posY, posX+8, posY , Red);
+		}
+		posY++;
+	}
+
 	initialPosition();
 }
 
@@ -38,11 +64,8 @@ static void drawInitBoard(){
 	int h2 = 0; 
 	
 	LCD_Clear(White);
-	/*
-	*
-	*	CASELLE INFORMAZIONI
-	*
-	*/
+	
+	//------------------------------------------------ chessboard informations boxes
 	LCD_DrawLine(5, 275, 75, 275 , Black);
 	LCD_DrawLine(5, 275, 5, 315 , Black);
 	GUI_Text(10, 280, (uint8_t *) "P1 Wall", Black, White);
@@ -63,11 +86,7 @@ static void drawInitBoard(){
 	LCD_DrawLine(165, 315, 235, 315 , Black);
 	LCD_DrawLine(235, 275, 235, 315 , Black);
 	
-	/*
-	*
-	*	SCACCHIERA
-	*
-	*/
+	//------------------------------------------------ cessboard squares
 	i = 0;
 	count = 0; 
 	count2 = 0;

@@ -8,6 +8,8 @@
 #include "../timer/timer.h"
 #include "../joystick/joystick.h"
 #include "../game/game.h"
+bool checkWallsRightTmp(int move, int enemy);
+bool checkWallsLeftTmp(int move, int enemy);
 
 extern struct GameInfo globalGameInfo;
 
@@ -22,17 +24,43 @@ extern int m;
 
 
 void movePawns(int newMove, bool cancel){
+	int i;	
+	
 	user = newMove >> 24;
 	x = newMove & 0xFF;
 	y = newMove & 0xFF00;
 	y = y >> 8;
+
 	if(cancel){
-		GUI_Text(x, y, (uint8_t *) " ", White, White);
+		for(i=0;i<17;i++){	
+			LCD_DrawLine(x, y , x+10, y, White);
+			y++;
+		}
 	} else {
-		if(user == 1){
-			GUI_Text(x, y, (uint8_t *) " ", White, Blue);
-		} else if (user == 0){
-			GUI_Text(x, y, (uint8_t *) " ", White, Red);
+		if(user == PLAYER_1){
+			for(i=0;i<17;i++){	
+				LCD_DrawLine(x, y , x+10, y  , Blue);
+				LCD_DrawLine(x, y, x+10, y , Blue);
+				if(i>=4 && i<=6){
+					LCD_DrawLine(x+2, y, x+4, y , White);
+					LCD_DrawLine(x+6, y, x+8, y , White);
+				}else if(i>=11 && i<=13){
+					LCD_DrawLine(x+2, y, x+8, y , Red);
+				}
+				y++;
+			}
+		} else if (user == PLAYER_0){
+			for(i=0;i<17;i++){	
+				LCD_DrawLine(x, y , x+10, y  , Green);
+				LCD_DrawLine(x, y, x+10, y , Green);
+				if(i>=4 && i<=6){
+					LCD_DrawLine(x+2, y, x+4, y , Black);
+					LCD_DrawLine(x+6, y, x+8, y , Black);
+				}else if(i>=11 && i<=13){
+					LCD_DrawLine(x+2, y, x+8, y , Red);
+				}
+				y++;
+			}
 		}
 	}
 }
@@ -116,6 +144,37 @@ bool checkPlayerNearUnderTmp(int move, int enemy) {
 	y = y>> 8;
 	return checkPlayerNearUnder(x, y, enemy);
 }
+bool checkPlayerNearDirectionTmp(int move, int enemy, int direction) {
+switch(direction){
+		case DIRECTION_DOWN:
+			return checkPlayerNearUnderTmp(move, enemy);
+		case DIRECTION_UP:
+			return checkPlayerNearOverTmp(move, enemy);
+	}
+	return false;
+}
+
+bool checkWallsTmpInDirection(int move, int enemy, int direction) {
+	switch(direction){
+		case DIRECTION_DOWN:
+			return checkWallsUnderTmp(move,enemy);
+		case DIRECTION_UP:
+			return checkWallsOverTmp(move,enemy);
+	}
+	return false;
+}
+
+//----------------------------------------------over
+bool checkWallsOverTmp(int move, int enemy) {
+	xCoord = move & 0xFF;
+	yCoord = move & 0xFF00;
+	yCoord = yCoord >> 8;
+	if(!checkPlayerNearOverTmp(move, enemy)) {
+		return checkWallsOver(xCoord, yCoord);
+	} else {
+		return checkWallsOver(xCoord, yCoord-33);
+	}
+}
 
 bool checkWallsOver(int xPawns, int yPawns){
 	if(yPawns <= 33+UPPERSPACE){
@@ -139,17 +198,7 @@ bool checkWallsOver(int xPawns, int yPawns){
 	return false;
 }
 
-bool checkWallsOverTmp(int move, int enemy) {
-	xCoord = move & 0xFF;
-	yCoord = move & 0xFF00;
-	yCoord = yCoord >> 8;
-	if(!checkPlayerNearOverTmp(move, enemy)) {
-		return checkWallsOver(xCoord, yCoord);
-	} else {
-		return checkWallsOver(xCoord, yCoord-33);
-	}
-}
-
+//----------------------------------------------under
 bool checkWallsUnderTmp(int move, int enemy) {
 	xCoord = move & 0xFF;
 	yCoord = move & 0xFF00;
@@ -160,7 +209,29 @@ bool checkWallsUnderTmp(int move, int enemy) {
 		return checkWallsUnder(xCoord, yCoord);
 	}
 }
+bool checkWallsUnder(int xPawns, int yPawns){
+	if(yPawns >= 233){
+		return true;
+	}
+	for(k		= 0; k<globalWalls.index; k++){
+		x = globalWalls.wallsList[k] & 0xF0000;
+		vertical = x == 0 ? true : false;
+		if(vertical) {
+			continue;
+		}
+		x = globalWalls.wallsList[k] & 0xFF;
+		y = globalWalls.wallsList[k] & 0xFF00;
+		y = y >> 8;
+		x = xPawns - x;
+		y = y - yPawns;
+			if(y <= 33 && x <= 55 && x >= 0 && y >= 0){ //33 perché è la distanza tra il walls.wallsList e l'omino. 55 perché si suppone che il walls.wallsList sia lungo di 61 e che la distanza massima sia si 55 tra l'inizio dell'omino
+				return true;
+			}
+	}
+	return false;
+}	
 
+//----------------------------------------------left
 bool checkWallsLeft(int xPawns, int yPawns){
 	if(xPawns <= 33){
 		return true;
@@ -183,7 +254,7 @@ bool checkWallsLeft(int xPawns, int yPawns){
 	return false;
 }
 
-
+//----------------------------------------------right
 bool checkWallsRight(int xPawns, int yPawns){
 	if(xPawns >= 193){
 		return true;
@@ -206,27 +277,7 @@ bool checkWallsRight(int xPawns, int yPawns){
 	return false;
 }
 
-bool checkWallsUnder(int xPawns, int yPawns){
-	if(yPawns >= 233){
-		return true;
-	}
-	for(k		= 0; k<globalWalls.index; k++){
-		x = globalWalls.wallsList[k] & 0xF0000;
-		vertical = x == 0 ? true : false;
-		if(vertical) {
-			continue;
-		}
-		x = globalWalls.wallsList[k] & 0xFF;
-		y = globalWalls.wallsList[k] & 0xFF00;
-		y = y >> 8;
-		x = xPawns - x;
-		y = y - yPawns;
-			if(y <= 33 && x <= 55 && x >= 0 && y >= 0){ //33 perché è la distanza tra il walls.wallsList e l'omino. 55 perché si suppone che il walls.wallsList sia lungo di 61 e che la distanza massima sia si 55 tra l'inizio dell'omino
-				return true;
-			}
-	}
-	return false;
-}	
+
 
 void markMoves(int lastMove, int*arrOfYellow, int* size, int positionEnemy){
 	int xPawns;
@@ -299,18 +350,19 @@ void markMoves(int lastMove, int*arrOfYellow, int* size, int positionEnemy){
 			
 }
 
-bool checkWall(int position, int typeCheck){ //0 right, 1 under, 2 left, 3 over
+bool checkWall(int position, int direction){
 	int xP = position & 0xFF;
 	int yP = position & 0xFF00;
 	yP = yP >> 8;
-	if(typeCheck == 0){
-		return checkWallsRight(xP, yP);
-	} else if(typeCheck == 1){
-		return checkWallsUnder(xP, yP);
-	} else if(typeCheck == 2){
-		return checkWallsLeft(xP, yP);
-	} else if(typeCheck == 3){
-		return checkWallsOver(xP, yP);
+	switch(direction){
+		case DIRECTION_RIGHT:
+			return checkWallsRight(xP, yP);
+		case DIRECTION_DOWN:
+			return checkWallsUnder(xP, yP);
+		case DIRECTION_LEFT:
+			return checkWallsLeft(xP, yP);
+		case DIRECTION_UP:
+			return checkWallsOver(xP, yP);
 	}
 	return false;
 }
@@ -323,7 +375,7 @@ void removeMarkedMoves(int*arrOfYellow, int* size){
 		x = arrOfYellow[i] & 0xFF;
 		y = arrOfYellow[i] & 0xFF00;
 		y = y >> 8;
-		GUI_Text(x,y, (uint8_t *) " ", White, White);
+ 		GUI_Text(x,y, (uint8_t *) " ", White, White);
 	}
 	
 	*size = 0;

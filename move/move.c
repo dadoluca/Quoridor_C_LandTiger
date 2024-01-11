@@ -2,10 +2,15 @@
 #include "../pawns/pawns.h"
 #include "../game/game.h"
 
-extern struct GameInfo globalGameInfo;
+void updateMoveUp(int* move);
+void updateMoveDown(int* move);
+void updateMoveRight(int* move);
+void updateMoveLeft(int* move);
 
+
+extern struct GameInfo globalGameInfo;
 volatile unsigned int move;
-extern int blocchi_gialli[4];
+extern int array_possible_moves[4];
 extern int size;
 int base0;
 int base1;
@@ -81,6 +86,23 @@ void updateMoveVerticalHorizontal(int* move, bool isVertical) {
 	
 	*move &= 0xFFF0FFFF;
 	*move |= (valueToMove << 16);
+}
+
+void updateMoveInDirection(int* move, int direction) {
+	switch(direction){
+		case DIRECTION_RIGHT:
+			updateMoveRight(move);
+			break;
+		case DIRECTION_DOWN:
+			updateMoveDown(move);
+			break;
+		case DIRECTION_LEFT:
+			updateMoveLeft(move);
+			break;
+		case DIRECTION_UP:
+			updateMoveUp(move);
+			break;
+	}
 }
 
 // modifica bit [16:8] di move
@@ -172,5 +194,5 @@ void initialPosition(){
 	base0 = globalGameInfo.last_move_p0;
 	globalGameInfo.last_move_p1 = 0x01002371;
 	base1 = globalGameInfo.last_move_p1;
-	markMoves(globalGameInfo.last_move_p0, blocchi_gialli, &size, globalGameInfo.last_move_p1);
+	markMoves(globalGameInfo.last_move_p0, array_possible_moves, &size, globalGameInfo.last_move_p1);
 }
