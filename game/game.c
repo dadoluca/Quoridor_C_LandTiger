@@ -17,7 +17,8 @@ void initGame();
 void initGame(){ //init global variables and draw board
 	globalGameInfo.current_turn_player=0;
 	globalWalls.index = 0;
-
+	globalGameInfo.current_move_mode = WALL_MODE;
+	
 	drawInitBoard();
 	drawInitTokens();
 }

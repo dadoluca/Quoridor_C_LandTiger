@@ -6,5 +6,6 @@ int totalPlayerWalls(int);
 bool finishedWalls(int);
 void writeWarningMessage(int, bool);
 void updateCountWalls(int);
-bool checkPosition(int,int);
-int calculate_centre(int, int, int);
+bool checkPosition(int);
+int getNextPlaceableWall();
+int getWallCentre(int, int, int);

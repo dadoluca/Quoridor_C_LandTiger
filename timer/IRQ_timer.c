@@ -75,7 +75,7 @@ void TIMER0_IRQHandler (void)
 ******************************************************************************/
 void TIMER1_IRQHandler (void)
 {
-	confirmMove();
+	confirmEndTurn();
   m = 0;
 	NVIC_DisableIRQ(EINT2_IRQn);					/* Disable del button Key2 */
   LPC_TIM1->IR = 1;			/* clear interrupt flag */

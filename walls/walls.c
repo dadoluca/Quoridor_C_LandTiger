@@ -1,16 +1,19 @@
 #include <stdbool.h>
 #include <stdio.h>
-#include "walls.h"
 #include "../GLCD/GLCD.h"
+#include "walls.h"
 #include "../game/game.h"
+#include "../move/move.h"
 
 #define UPPERSPACE 29
 extern struct Walls globalWalls;  
 
 void draw_wall(int posX_start, int posY_start, int posX_end, int posY_end, int vertical, int player, bool cancel);
 void draw_wall_wrapper(int move, bool cancel);
-bool checkPosition(int move, int oldMove);
-int calculate_centre(int x, int y, int vertical);
+bool checkPosition(int move);
+int getWallCentre(int x, int y, int vertical);
+int getNextPlaceableWall();
+
 
 void draw_wall_wrapper(int move, bool cancel){
 	int x_end;
@@ -120,7 +123,7 @@ void updateCountWalls(int playerId){
 }
 
 
-int calculate_centre(int x, int y, int vertical){
+int getWallCentre(int x, int y, int vertical){
 	int res=0;
 	if(vertical==0){
 		x = x; 
@@ -135,7 +138,7 @@ int calculate_centre(int x, int y, int vertical){
 	return res;
 }
 
-bool checkPosition(int move, int oldMove){
+bool checkPosition(int move){
 	int vertical;
 	int centre_coordinate;
 	
@@ -162,8 +165,7 @@ bool checkPosition(int move, int oldMove){
 	
 	int i;
 	int is_placeable = true;
-	int yOld = oldMove & 0xFF00;
-	yOld = yOld > 8;
+
 
 	x_start = move & 0xFF; 
 	y_start = move & 0xFF00;
@@ -172,7 +174,7 @@ bool checkPosition(int move, int oldMove){
 	vertical= move & 0xF0000;
 	vertical = vertical >> 16;
 	
-	centre_coordinate = calculate_centre(x_start,y_start,vertical);
+	centre_coordinate = getWallCentre(x_start,y_start,vertical);
 	x_centre = centre_coordinate & 0xFF; 
 	y_centre = centre_coordinate & 0xFF00;
 	y_centre = y_centre >> 8;
@@ -199,7 +201,7 @@ bool checkPosition(int move, int oldMove){
 		
 		vertical= globalWalls.wallsList[i] & 0xF0000;
 	  vertical = vertical >> 16;
-		centre_coordinate = calculate_centre(x_start_current,y_start_current,vertical);
+		centre_coordinate = getWallCentre(x_start_current,y_start_current,vertical);
 		x_centre_current = centre_coordinate & 0xFF;
 		y_centre_current = centre_coordinate & 0xFF00;
 	  y_centre_current = y_centre_current >> 8;
@@ -219,6 +221,28 @@ bool checkPosition(int move, int oldMove){
 	
 	return is_placeable;
 	
+}
+
+int getNextPlaceableWall(){
+	int xW;
+	int yW;
+	bool up = true;
+	
+	int current_default_beginning_wall = globalGameInfo.current_turn_player==1 ? 0x1119D68 : 0x0119D68;	
+	
+	while(!checkPosition(current_default_beginning_wall)){
+		xW = current_default_beginning_wall & 0xFF;
+		yW = current_default_beginning_wall & 0xFF00;
+		yW = yW >> 8;
+		if(UPPERSPACE > yW-33 || !up){
+			updateMoveDown(&current_default_beginning_wall);
+			up = false;
+		} else if(up/*yW + 33 > 233*/){
+			updateMoveUp(&current_default_beginning_wall);
+		}
+	}
+	
+	return current_default_beginning_wall;
 }
 
 

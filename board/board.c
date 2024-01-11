@@ -5,7 +5,7 @@
 #include "../game/game.h"
 
 extern struct Walls globalWalls;
-extern int defaultCenteredWall;
+extern int current_default_beginning_wall;
 
 int getIndexPawn(int posOldMove);
 
@@ -161,7 +161,7 @@ void insertWallForCheck(int wall){
 			globalWalls.wallsList[globalWalls.index] = wall;
 			globalWalls.index = globalWalls.index + 1;
 		} else {
-			wall = wall == 0 ? defaultCenteredWall : wall;
+			wall = wall == 0 ? current_default_beginning_wall : wall;
 			globalWalls.wallsList[globalWalls.index] = wall;
 			globalWalls.index = globalWalls.index + 1;
 		}
