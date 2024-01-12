@@ -14,7 +14,7 @@
 #include "timer.h"
 #include "../GLCD/GLCD.h" 
 #include "../TouchPanel/TouchPanel.h"
-#include "../pawns/pawns.h"
+#include "../tokens/token.h"
 #include "../walls/walls.h"
 #include "../RIT/RIT.h"
 
@@ -27,6 +27,7 @@
 ** Returned value:		None
 **
 ******************************************************************************/
+int quartersOfSecond = 4; 
 int sec = 20;
 bool reset = false;
 
@@ -40,6 +41,7 @@ void TIMER0_IRQHandler (void)
 {
 	if(reset) {
 		sec = 20;
+		quartersOfSecond=4;
 		reset = false;
 	}	else {
 		char str[2];
@@ -49,7 +51,16 @@ void TIMER0_IRQHandler (void)
 			sprintf(str, "0%d", sec);
 		}
 		updateSec(str);
-		sec--;
+		quartersOfSecond--;
+		if(quartersOfSecond<=0){
+			sec--;
+			quartersOfSecond=4;
+		}
+		sec = quartersOfSecond<=0? sec--: sec;
+		if(sec<=0){
+			confirmEndTurn();
+			m = 0;
+		}
 	}
   LPC_TIM0->IR = 1;			/* clear interrupt flag */
   return;
@@ -67,10 +78,9 @@ void TIMER0_IRQHandler (void)
 ******************************************************************************/
 void TIMER1_IRQHandler (void)
 {
-	confirmEndTurn();
+	/*confirmEndTurn();
   m = 0;
-	NVIC_DisableIRQ(EINT2_IRQn);					/* Disable del button Key2 */
-  LPC_TIM1->IR = 1;			/* clear interrupt flag */
+*/
   return;
 }
 

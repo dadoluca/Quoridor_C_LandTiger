@@ -1,5 +1,5 @@
 #include <stdbool.h>
-#include "../pawns/pawns.h"
+#include "../tokens/token.h"
 #include "../game/game.h"
 
 void updateMoveUp(int* move);

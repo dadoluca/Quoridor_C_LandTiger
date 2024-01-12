@@ -1,5 +1,5 @@
 #include <stdbool.h>
 
-int getPosMuro(int);
+int GetWallPos(int);
 bool foundWinRow(int*, int);
 bool checkPermanentPositionWall(int,int);

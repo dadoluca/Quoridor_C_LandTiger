@@ -4,7 +4,7 @@
 #include "../TouchPanel/TouchPanel.h"
 #include "../RIT/RIT.h"
 #include "../walls/walls.h"
-#include "../pawns/pawns.h"
+#include "../tokens/token.h"
 #include "../timer/timer.h"
 #include "../movementLogic/movement_logic.h"
 

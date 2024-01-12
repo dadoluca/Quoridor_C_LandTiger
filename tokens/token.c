@@ -1,4 +1,4 @@
-#include "pawns.h"
+#include "token.h"
 #include "lpc17xx.h"
 #include "../GLCD/GLCD.h"
 #include "../TouchPanel/TouchPanel.h"
@@ -257,7 +257,6 @@ bool checkWallsLeft(int xPawns, int yPawns){
 
 //----------------------------------------------right
 bool checkWallsRight(int xPawns, int yPawns){
-	
 	if(xPawns >= 193){
 		return true;
 	}

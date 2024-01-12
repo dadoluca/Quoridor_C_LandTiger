@@ -9,7 +9,7 @@
 *********************************************************************************************************/
 #include "lpc17xx.h"
 #include "RIT.h"
-#include "../pawns/pawns.h"
+#include "../tokens/token.h"
 #include "../movementLogic/movement_logic.h"
 #include "../timer/timer.h"
 #include "../walls/walls.h"
@@ -174,7 +174,7 @@ void RIT_IRQHandler (void)
 					KEY1_Actions();
 				
 					//enable key2 for wall rotation
-					LPC_SC->EXTINT &= (1 << 2);							/* clear pending interrupt         */
+					LPC_SC->EXTINT |= (1 << 2);							/* clear pending interrupt         */
 					NVIC_ClearPendingIRQ(EINT2_IRQn);
 					NVIC_EnableIRQ(EINT2_IRQn);							/* enable Button KEY2 interrupts */
 					break;
@@ -184,8 +184,10 @@ void RIT_IRQHandler (void)
 			down_key1++;
 		}else {	/* button released */
 			down_key1=0;
-			NVIC_EnableIRQ(EINT1_IRQn);
-			LPC_PINCON->PINSEL4    |= (1 << 22); /* External interrupt 0 pin selection */
+			if(globalGameInfo.current_move_mode==TOKEN_MODE){
+				NVIC_EnableIRQ(EINT1_IRQn);
+				LPC_PINCON->PINSEL4    |= (1 << 22); /* External interrupt 0 pin selection */
+			}
 		}
 	} else {
 		if(down_key1 == 1)
@@ -206,8 +208,12 @@ void RIT_IRQHandler (void)
 			down_key2++;
 		}else {
 			down_key2=0;
-			NVIC_EnableIRQ(EINT2_IRQn);
-			LPC_PINCON->PINSEL4    |= (1 << 24);
+			if(globalGameInfo.current_move_mode==WALL_MODE){
+				NVIC_EnableIRQ(EINT2_IRQn);
+				LPC_PINCON->PINSEL4    |= (1 << 24); 
+			}
+			//NVIC_EnableIRQ(EINT2_IRQn);
+			//LPC_PINCON->PINSEL4    |= (1 << 24);
 		}
 	} else {
 		if(down_key2 == 1)
@@ -226,9 +232,7 @@ void EINT0_Actions(){
 	initGame(); //init global variables and draw board
 					
 	//init and enable the timers for counting the 20 seconds
-	init_timer(0, 0x017D7840);	/* 1 sec  */
-	init_timer(1, 0x1F4ADD40);	/* 20 sec */ 
-	enable_timer(1);						
+	init_timer(0, 0x5F5E10);	/* 0,25 sec  */
 	enable_timer(0);
 }
 
@@ -402,11 +406,16 @@ void confirmEndTurn(){
 	}
 	globalGameInfo.current_turn_player = globalGameInfo.current_turn_player==PLAYER_1 ? PLAYER_0 : PLAYER_1;
 	globalGameInfo.current_move_mode=TOKEN_MODE;
-	NVIC_DisableIRQ(EINT2_IRQn);	//Disable del bottone key2
+	
+	NVIC_DisableIRQ(EINT2_IRQn);					/* Disable del button Key2 */
+  LPC_TIM1->IR = 1;											/* clear interrupt flag */
 	//Abilito il key1, con il clear del pending
-	LPC_SC->EXTINT &= (1 << 1);
-	NVIC_ClearPendingIRQ(EINT1_IRQn);
 	NVIC_EnableIRQ(EINT1_IRQn);
+	NVIC_ClearPendingIRQ(EINT1_IRQn);
+	LPC_PINCON->PINSEL4    |= (1 << 22); /* External interrupt 0 pin selection */
+	//LPC_SC->EXTINT &= (1 << 1);
+	//NVIC_ClearPendingIRQ(EINT1_IRQn);
+	//NVIC_EnableIRQ(EINT1_IRQn);
 }
 
 /******************************************************************************

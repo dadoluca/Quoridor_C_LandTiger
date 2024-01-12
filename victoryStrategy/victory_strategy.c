@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "../pawns/pawns.h"
+#include "../tokens/token.h"
 #include "../game/game.h"
 
 extern struct Walls globalWalls;
@@ -36,31 +36,31 @@ const int matWallHorizontal[] = {
 	0x9D05, 0x9D26, 0x9D47, 0x9D68, 0x9D89, 0x9DAA,
 	0x7C05, 0x7C26, 0x7C47, 0x7C68, 0x7C89, 0x7CAA,
 	0x5B05, 0x5B26, 0x5B47, 0x5B68, 0x5B89, 0x5BAA,
-	0x3A05, 0x3A26, 0x3A47, 0x3A68, 0x3A89, 0x3AAA,
+	0x3A05, 0x3A26, 0x3A47, 0x3A68, 0x3A89, 0x3AAB,
 };
 
 int board[49];
 
 //inizializza board, richiamata ogni volta che si vuole posizionare un muro
-void initBoard(int oldMove){
+void initBoard(int lastMove){
 	int i;
 	
-	int posOldMove = oldMove & 0xFFFF;
+	int posPawn = lastMove & 0xFFFF;
 	
 	for(i=0;i<49;i++){
 		board[i] = 0;
 	}
 	
 	// inizializza a 1 casella dove si trova il giocatore
-	board[getIndexPawn(posOldMove)]=1;
+	board[getIndexPawn(posPawn)]=1;
 }
 
-int getIndexPawn(int posOldMove){
+int getIndexPawn(int posPawn){
 	int i;
 	int res;
-	posOldMove = posOldMove & 0xFFFF;
+	posPawn = posPawn & 0xFFFF;
 	for(i=0;i<49;i++){
-		if(posOldMove==matPos[i]){
+		if(posPawn==matPos[i]){
 			res=i; 
 		} 
 	}
@@ -68,23 +68,23 @@ int getIndexPawn(int posOldMove){
 }
 
 
-void stepIterativo(int posOldMove, int* matMove){
-	int i_pawn = getIndexPawn(posOldMove);
+void stepIterativo(int posPawn){
+	int i_pawn = getIndexPawn(posPawn);
 	
-	if((!checkWall(posOldMove,DIRECTION_RIGHT)) && (i_pawn+1)%7!=0 && matMove[i_pawn+1] != 2){//se non c'è muro right e non è l'ultima colonna
-		matMove[i_pawn+1]=1;//cella raggiunta
+	if((!checkWall(posPawn,DIRECTION_RIGHT)) && (i_pawn+1)%7!=0 && board[i_pawn+1] != 2){//se non c'è muro right e non è l'ultima colonna
+		board[i_pawn+1]=1;//cella raggiunta
 	}
-	if((!checkWall(posOldMove,DIRECTION_DOWN)) && i_pawn>6 && matMove[i_pawn-7] != 2){//se non c'è muro under e i_pawn non è la prima riga in basso
-		matMove[i_pawn-7]=1;
+	if((!checkWall(posPawn,DIRECTION_DOWN)) && i_pawn>6 && board[i_pawn-7] != 2){//se non c'è muro under e i_pawn non è la prima riga in basso
+		board[i_pawn-7]=1;
 	}
-	if((!checkWall(posOldMove,DIRECTION_LEFT)) && i_pawn%7!=0 && matMove[i_pawn-1] != 2){//se non c'è muro left e non è prima colonna
-		matMove[i_pawn-1]=1;
+	if((!checkWall(posPawn,DIRECTION_LEFT)) && i_pawn%7!=0 && board[i_pawn-1] != 2){//se non c'è muro left e non è prima colonna
+		board[i_pawn-1]=1;
 	}
-	if((!checkWall(posOldMove,DIRECTION_UP)) && i_pawn<42 && matMove[i_pawn+7] != 2){//se non c'è muro up
-		matMove[i_pawn+7]=1;
+	if((!checkWall(posPawn,DIRECTION_UP)) && i_pawn<42 && board[i_pawn+7] != 2){//se non c'è muro up
+		board[i_pawn+7]=1;
 	}
 	
-	matMove[i_pawn] = 2; //cella raggiunta e ho esplorato i suoi dintorni
+	board[i_pawn] = 2; //cella raggiunta e ho esplorato i suoi dintorni
 }
 
 
@@ -97,7 +97,7 @@ void freeBoard(int* matMove) {
 
 // da chiamare una volta per muro iterando sulla lista muri
 // input: elemento globalWalls -> output: indice della posizione nella tabella Horizontal o Vertical da 0 a 35
-int getPosMuro(int wallMove){
+int GetWallPos(int wallMove){
 		int i;
 
 		int wallIndex = 0xFFFFFFFF;	// imposto valore di default per debug
@@ -171,34 +171,30 @@ void deleteWallAfterCheck(int wall){
 	globalWalls.index = globalWalls.index - 1;
 }
 
-bool checkPermanentPositionWall(int position, int wall) {
+bool checkPermanentPositionWall(int lastMove, int wall) {
 	bool continueFor = true;
-	bool canPlace = false;
 	int index;
-	int currPlayer = position & 0xF000000;
+	int currPlayer = lastMove & 0xF000000;
 	currPlayer = currPlayer >> 24;
-	initBoard(position);
+	initBoard(lastMove);
 
 	// i da 0 a 48 (1 nelle due ultime righe, oppure nessun 1 oltre il 2	, if board[i] == 1 richiami stepIterativo
 	insertWallForCheck(wall);
 	while(continueFor){
 		for(index = 0; index<49; index++){
 			if(board[index] == 1) {
-				stepIterativo(matPos[index], board);
+				stepIterativo(matPos[index]);
 				if(foundWinRow(board, currPlayer)){
 					deleteWallAfterCheck(wall);
-					continueFor = false;
-					canPlace = true;
+					return true;
 				}
 			}
 		}
 		if(noOneInBoard(board)) {
 			deleteWallAfterCheck(wall);
-			continueFor = false;
-			canPlace = false;
+			return false;
 		}
 	}
-	return canPlace;
 }
 
 
