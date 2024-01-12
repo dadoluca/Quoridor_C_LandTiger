@@ -3,7 +3,7 @@
 #include "../GLCD/GLCD.h"
 #include "walls.h"
 #include "../game/game.h"
-#include "../move/move.h"
+#include "../movementLogic/movement_logic.h"
 
 #define UPPERSPACE 29
 extern struct Walls globalWalls;  
@@ -46,12 +46,12 @@ void draw_wall_wrapper(int move, bool cancel){
 void draw_wall(int posX_start, int posY_start, int posX_end, int posY_end, int vertical, int player, bool cancel){
 	int i=0;
 	for(i=0;i<4;i++){//disegna il muro creando uno spessore di 4
-		if(player==0)//red
+		if(player==PLAYER_0)//green
 		{
 			if(cancel)
 				LCD_DrawLine(posX_start, posY_start, posX_end, posY_end , White);
 			else
-				LCD_DrawLine(posX_start, posY_start, posX_end, posY_end , Red);
+				LCD_DrawLine(posX_start, posY_start, posX_end, posY_end , Green);
 		}
 		else{		//blue
 			if(cancel)
@@ -98,10 +98,10 @@ void writeWarningMessage(int playerId, bool cancel){
 	}
 	//Pulisce da eventuali scritte e poi scrive
 	GUI_Text(42, 3, (uint8_t *) "                       ", White, White);
-	if(playerId == 0){
-		GUI_Text(42, 3, (uint8_t *) "User 0 reached 8 walls", Black, Red);
-	} else if(playerId == 1){
-		GUI_Text(42, 3, (uint8_t *) "User 1 reached 8 walls", Black, Red);
+	if(playerId == PLAYER_0){
+		GUI_Text(42, 3, (uint8_t *) "Player 1 reached 8 walls", Black, Green);
+	} else if(playerId == PLAYER_1){
+		GUI_Text(42, 3, (uint8_t *) "Player 2 reached 8 walls", White, Blue);
 	}
 }
 

@@ -10,10 +10,10 @@
 #include "lpc17xx.h"
 #include "RIT.h"
 #include "../pawns/pawns.h"
-#include "../move/move.h"
+#include "../movementLogic/movement_logic.h"
 #include "../timer/timer.h"
 #include "../walls/walls.h"
-#include "../board/board.h"
+#include "../victoryStrategy/victory_strategy.h"
 #include "../button_EXINT/button.h"
 #include "../game/game.h"
 /******************************************************************************

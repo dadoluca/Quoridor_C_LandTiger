@@ -6,7 +6,7 @@
 #include "../walls/walls.h"
 #include "../pawns/pawns.h"
 #include "../timer/timer.h"
-#include "../move/move.h"
+#include "../movementLogic/movement_logic.h"
 
 struct GameInfo globalGameInfo;
 struct Walls globalWalls;  

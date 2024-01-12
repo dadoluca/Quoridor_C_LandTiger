@@ -17,9 +17,8 @@
 struct GameInfo {
     int last_move_p0;															//last 32 bit move string of player 0
 		int last_move_p1;															//		"					"				"						1
-		int current_turn_player; 											//0 or 1
-		int current_move_mode;																	//0:wall move  1:token move
-
+		int current_turn_player; 											//PLAYER_0 or PLAYER_1
+		int current_move_mode;												//0:WALL_MODE  1:TOKEN_MODE
 };
 extern struct GameInfo globalGameInfo;
 

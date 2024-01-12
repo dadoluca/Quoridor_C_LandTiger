@@ -13,8 +13,8 @@ bool checkWallsLeftTmp(int move, int enemy);
 
 extern struct GameInfo globalGameInfo;
 
-volatile int x;
-volatile int y;
+int x;
+ int y;
 volatile int user;
 bool vertical = false;
 int k;
@@ -182,7 +182,8 @@ bool checkWallsOver(int xPawns, int yPawns){
 	}
 	for(k = 0; k<globalWalls.index; k++){
 		x = globalWalls.wallsList[k] & 0xF0000;
-		vertical = x == 0 ? true : false;
+		vertical = x == 0;
+		
 		if(vertical) {
 			continue;
 		}
@@ -191,7 +192,7 @@ bool checkWallsOver(int xPawns, int yPawns){
 		y = y >> 8;
 		x = (x+61) - xPawns;
 		y = yPawns - y;
-			if(y <= 33 && x <= 55 && x >= 0 && y >= 0){ //33 perché è la distanza tra il walls.wallsList e l'omino. 55 perché si suppone che il walls.wallsList sia lungo di 61 e che la distanza massima sia si 55 tra l'inizio dell'omino
+		if(y <= 33 && x <= 55 && x >= 0 && y >= 0){ //33 perché è la distanza tra il walls.wallsList e l'omino. 55 perché si suppone che il walls.wallsList sia lungo di 61 e che la distanza massima sia si 55 tra l'inizio dell'omino
 				return true;
 			}
 	}
@@ -238,7 +239,7 @@ bool checkWallsLeft(int xPawns, int yPawns){
 	}
 	for(k		= 0; k<globalWalls.index; k++){
 		x = globalWalls.wallsList[k] & 0xF0000;
-		vertical = x == 0 ? true : false;
+		vertical = x == 0;
 		if(!vertical) {
 			continue;
 		}
@@ -256,12 +257,13 @@ bool checkWallsLeft(int xPawns, int yPawns){
 
 //----------------------------------------------right
 bool checkWallsRight(int xPawns, int yPawns){
+	
 	if(xPawns >= 193){
 		return true;
 	}
 	for(k		= 0; k<globalWalls.index; k++){	
 		x = globalWalls.wallsList[k] & 0xF0000;
-		vertical = x == 0 ? true : false;
+		vertical = x == 0;
 		if(!vertical) {
 			continue;
 		}
@@ -270,7 +272,7 @@ bool checkWallsRight(int xPawns, int yPawns){
 		y = y >> 8;
 		y = (y+61) - yPawns;
 		x = x - xPawns;
-			if(y <= 55 && x <= 33 && x >= 0 && y >= 0){
+		if(y <= 55 && x <= 33 && x >= 0 && y >= 0){
 				return true;
 			}
 	}

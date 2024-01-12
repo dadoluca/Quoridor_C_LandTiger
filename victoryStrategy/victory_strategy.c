@@ -71,16 +71,16 @@ int getIndexPawn(int posOldMove){
 void stepIterativo(int posOldMove, int* matMove){
 	int i_pawn = getIndexPawn(posOldMove);
 	
-	if((!checkWall(posOldMove,0)) && (i_pawn+1)%7!=0 && matMove[i_pawn+1] != 2){//se non c'è muro right e non è l'ultima colonna
+	if((!checkWall(posOldMove,DIRECTION_RIGHT)) && (i_pawn+1)%7!=0 && matMove[i_pawn+1] != 2){//se non c'è muro right e non è l'ultima colonna
 		matMove[i_pawn+1]=1;//cella raggiunta
 	}
-	if((!checkWall(posOldMove,1)) && i_pawn>6 && matMove[i_pawn-7] != 2){//se non c'è muro under e i_pawn non è la prima riga in basso
+	if((!checkWall(posOldMove,DIRECTION_DOWN)) && i_pawn>6 && matMove[i_pawn-7] != 2){//se non c'è muro under e i_pawn non è la prima riga in basso
 		matMove[i_pawn-7]=1;
 	}
-	if((!checkWall(posOldMove,2)) && i_pawn%7!=0 && matMove[i_pawn-1] != 2){//se non c'è muro left e non è prima colonna
+	if((!checkWall(posOldMove,DIRECTION_LEFT)) && i_pawn%7!=0 && matMove[i_pawn-1] != 2){//se non c'è muro left e non è prima colonna
 		matMove[i_pawn-1]=1;
 	}
-	if((!checkWall(posOldMove,3)) && i_pawn<42 && matMove[i_pawn+7] != 2){//se non c'è muro up
+	if((!checkWall(posOldMove,DIRECTION_UP)) && i_pawn<42 && matMove[i_pawn+7] != 2){//se non c'è muro up
 		matMove[i_pawn+7]=1;
 	}
 	
@@ -187,15 +187,18 @@ bool checkPermanentPositionWall(int position, int wall) {
 				stepIterativo(matPos[index], board);
 				if(foundWinRow(board, currPlayer)){
 					deleteWallAfterCheck(wall);
-					return true;
+					continueFor = false;
+					canPlace = true;
 				}
 			}
 		}
 		if(noOneInBoard(board)) {
 			deleteWallAfterCheck(wall);
-			return false;
+			continueFor = false;
+			canPlace = false;
 		}
 	}
+	return canPlace;
 }
 
 
