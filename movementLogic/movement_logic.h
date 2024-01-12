@@ -13,3 +13,4 @@ void updateMoveLeft(int*);
 void updateMoveLeftPlayer(int*);
 void initialPosition();
 void updateMoveInDirection(int*,int);
+void updateMoveOnPlayerInDirection(int*, int);

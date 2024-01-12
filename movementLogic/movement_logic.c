@@ -148,6 +148,17 @@ void updateMoveDownPlayer(int*	move) {
 	*move = *move | (y_start << 8);
 }
 
+void updateMoveOnPlayerInDirection(int* move, int direction) {
+	switch(direction){
+		case DIRECTION_DOWN:
+			updateMoveDownPlayer(move);
+			break;
+		case DIRECTION_UP:
+			updateMoveUpPlayer(move);
+			break;
+	}
+}
+
 // modifica bit [0:7] di move
 void updateMoveRight(int*	move) {
 	int x_start = *move & 0xFF;

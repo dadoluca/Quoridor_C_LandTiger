@@ -376,7 +376,7 @@ void removeMarkedMoves(int*arrOfYellow, int* size){
 		x = arrOfYellow[i] & 0xFF;
 		y = arrOfYellow[i] & 0xFF00;
 		y = y >> 8;
- 		GUI_Text(x,y, (uint8_t *) " ", White, White);
+ 		GUI_Text(x,y, (uint8_t *) "  ", White, White);
 	}
 	
 	*size = 0;

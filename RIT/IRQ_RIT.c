@@ -61,7 +61,7 @@ void RIT_IRQHandler (void)
 		up++;
 		switch(up){
 			case 1:
-				 joystickMove(DIRECTION_UP);
+ 				 joystickMove(DIRECTION_UP);
 				break;
 			default:
 				break;
@@ -294,7 +294,7 @@ void joystickMove(int direction){
 						movePawns(lastMoveTmp, true);
 					}
 				} else if(checkPlayerNearDirectionTmp(globalGameInfo.last_move_p1, globalGameInfo.last_move_p0, direction) && !checkWallsTmpInDirection(globalGameInfo.last_move_p1, globalGameInfo.last_move_p0,direction)) {
-					updateMoveUpPlayer(&m);
+					updateMoveOnPlayerInDirection(&m,direction);
 					if(m != globalGameInfo.last_move_p1) {
 						movePawns(globalGameInfo.last_move_p1, true);
 					}
@@ -337,9 +337,10 @@ void joystickMove(int direction){
 				else if(!checkPlayerNearDirectionTmp(globalGameInfo.last_move_p0, globalGameInfo.last_move_p1,direction) && !checkWallsTmpInDirection(globalGameInfo.last_move_p0, globalGameInfo.last_move_p1, direction)) {
 					updateMoveInDirection(&m,direction);//calculates the movment based on direction
 					if(m != globalGameInfo.last_move_p0) {
-					movePawns(lastMoveTmp, true);
-					}else if(checkPlayerNearDirectionTmp(globalGameInfo.last_move_p0, globalGameInfo.last_move_p1,direction) && !checkWallsTmpInDirection(globalGameInfo.last_move_p0, globalGameInfo.last_move_p1, direction)){
-						updateMoveUpPlayer(&m);
+						movePawns(lastMoveTmp, true);
+					}
+				} else if(checkPlayerNearDirectionTmp(globalGameInfo.last_move_p0, globalGameInfo.last_move_p1,direction) && !checkWallsTmpInDirection(globalGameInfo.last_move_p0, globalGameInfo.last_move_p1, direction)){
+						updateMoveOnPlayerInDirection(&m,direction);
 						if(m != globalGameInfo.last_move_p0) {
 							movePawns(globalGameInfo.last_move_p0, true);
 						}
@@ -351,7 +352,6 @@ void joystickMove(int direction){
 						movePawns(m, false);
 					}
 				}
-			}
 		}else{
 		//-------------- WALL_MODE
 			lastWallMoveTmp = lastWallMoveTmp == 0 ? current_default_beginning_wall : lastWallMoveTmp;
