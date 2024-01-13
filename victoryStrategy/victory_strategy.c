@@ -7,12 +7,12 @@
 extern struct Walls globalWalls;
 extern int current_default_beginning_wall;
 
-int getIndexPawn(int posOldMove);
+int getPawnIndexAtPosition(int playerPosition);
 
 
 // TODO: verificare correttezza terza colonna
 const int matPos[] = {
-	0xE90E,0xE92F,0x5050,0xE971,0xE992,0xE9B3,0xE9D4,
+	0xE90E,0xE92F,0xE950,0xE971,0xE992,0xE9B3,0xE9D4,
 	0xC80E,0xC82F,0xC850,0xC871,0xC892,0xC8B3,0xC8D4,
 	0xA70E,0xA72F,0xA750,0xA771,0xA792,0xA7B3,0xA7D4,
 	0x860E,0x862F,0x8650,0x8671,0x8692,0x86B3,0x86D4,
@@ -36,13 +36,13 @@ const int matWallHorizontal[] = {
 	0x9D05, 0x9D26, 0x9D47, 0x9D68, 0x9D89, 0x9DAA,
 	0x7C05, 0x7C26, 0x7C47, 0x7C68, 0x7C89, 0x7CAA,
 	0x5B05, 0x5B26, 0x5B47, 0x5B68, 0x5B89, 0x5BAA,
-	0x3A05, 0x3A26, 0x3A47, 0x3A68, 0x3A89, 0x3AAB,
+	0x3A05, 0x3A26, 0x3A47, 0x3A68, 0x3A89, 0x3AAA,
 };
 
 int board[49];
 
 //inizializza board, richiamata ogni volta che si vuole posizionare un muro
-void initBoard(int lastMove){
+void initializeGameBoard(int lastMove){
 	int i;
 	
 	int posPawn = lastMove & 0xFFFF;
@@ -52,10 +52,10 @@ void initBoard(int lastMove){
 	}
 	
 	// inizializza a 1 casella dove si trova il giocatore
-	board[getIndexPawn(posPawn)]=1;
+	board[getPawnIndexAtPosition(posPawn)]=1;
 }
 
-int getIndexPawn(int posPawn){
+int getPawnIndexAtPosition(int posPawn){
 	int i;
 	int res;
 	posPawn = posPawn & 0xFFFF;
@@ -68,8 +68,8 @@ int getIndexPawn(int posPawn){
 }
 
 
-void stepIterativo(int posPawn){
-	int i_pawn = getIndexPawn(posPawn);
+void explorePossibleMoves(int posPawn){
+	int i_pawn = getPawnIndexAtPosition(posPawn);
 	
 	if((!checkWall(posPawn,DIRECTION_RIGHT)) && (i_pawn+1)%7!=0 && board[i_pawn+1] != 2){//se non c'è muro right e non è l'ultima colonna
 		board[i_pawn+1]=1;//cella raggiunta
@@ -90,9 +90,9 @@ void stepIterativo(int posPawn){
 
 // chiamare a fine procedura check, libera memoria allocata per vettore usato dall'algoritmo e mette a null il puntatore
 // evita memory leak
-void freeBoard(int* matMove) {
-    free(matMove);
-		matMove = NULL;
+void freeMemoryAndResetMatrix(int* moveMatrix) {
+    free(moveMatrix);
+		moveMatrix = NULL;
 }
 
 // da chiamare una volta per muro iterando sulla lista muri
@@ -132,7 +132,7 @@ int GetWallPos(int wallMove){
 		
 }
 
-bool foundWinRow(int* board, int currPlayer){
+bool checkWinningRow(int* board, int currPlayer){
 	int i;
 
 	if(currPlayer == 1){	//Devo controllare l'opposto perchè quando piazzo muro blu devo controllare se giocatore rosso può arrivare alla fine
@@ -147,7 +147,7 @@ bool foundWinRow(int* board, int currPlayer){
 	return false;
 }
 
-bool noOneInBoard(int* board){
+bool isBoardEmptyof1(int* board){
 	int i;
 
 	for(i=0; i<49; i++){
@@ -171,26 +171,26 @@ void deleteWallAfterCheck(int wall){
 	globalWalls.index = globalWalls.index - 1;
 }
 
-bool checkPermanentPositionWall(int lastMove, int wall) {
+bool validateWallPlacement(int lastMove, int wall) {
 	bool continueFor = true;
 	int index;
 	int currPlayer = lastMove & 0xF000000;
 	currPlayer = currPlayer >> 24;
-	initBoard(lastMove);
+	initializeGameBoard(lastMove);
 
-	// i da 0 a 48 (1 nelle due ultime righe, oppure nessun 1 oltre il 2	, if board[i] == 1 richiami stepIterativo
+	// i da 0 a 48 (1 nelle due ultime righe, oppure nessun 1 oltre il 2	, if board[i] == 1 richiami explorePossibleMoves
 	insertWallForCheck(wall);
 	while(continueFor){
 		for(index = 0; index<49; index++){
 			if(board[index] == 1) {
-				stepIterativo(matPos[index]);
-				if(foundWinRow(board, currPlayer)){
+				explorePossibleMoves(matPos[index]);
+				if(checkWinningRow(board, currPlayer)){
 					deleteWallAfterCheck(wall);
 					return true;
 				}
 			}
 		}
-		if(noOneInBoard(board)) {
+		if(isBoardEmptyof1(board)) {
 			deleteWallAfterCheck(wall);
 			return false;
 		}

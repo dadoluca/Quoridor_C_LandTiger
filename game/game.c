@@ -10,7 +10,7 @@
 
 struct GameInfo globalGameInfo;
 struct Walls globalWalls;  
-static void drawInitBoard();
+static void drawinitializeGameBoard();
 static void drawInitTokens();
 void initGame();
 	
@@ -18,8 +18,10 @@ void initGame(){ //init global variables and draw board
 	globalGameInfo.current_turn_player=0;
 	globalWalls.index = 0;
 	globalGameInfo.current_move_mode = TOKEN_MODE;
+	globalGameInfo.walls_placed_p0=0;
+	globalGameInfo.walls_placed_p1=0;
 	
-	drawInitBoard();
+	drawinitializeGameBoard();
 	drawInitTokens();
 }
 
@@ -55,7 +57,7 @@ static void drawInitTokens(){
 	initialPosition();
 }
 
-static void drawInitBoard(){
+static void drawinitializeGameBoard(){
   int i = 0;
 	int j = 0;
 	int count = 0;

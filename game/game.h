@@ -19,6 +19,8 @@ struct GameInfo {
 		int last_move_p1;															//		"					"				"						1
 		int current_turn_player; 											//PLAYER_0 or PLAYER_1
 		int current_move_mode;												//0:WALL_MODE  1:TOKEN_MODE
+		int	walls_placed_p0;
+		int walls_placed_p1;
 };
 extern struct GameInfo globalGameInfo;
 
@@ -28,7 +30,7 @@ struct Walls {
 };
 extern struct Walls globalWalls;
 
-static void drawInitBoard();
+static void drawinitializeGameBoard();
 static void drawInitTokens();
 void initGame();
 

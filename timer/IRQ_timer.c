@@ -78,9 +78,9 @@ void TIMER0_IRQHandler (void)
 ******************************************************************************/
 void TIMER1_IRQHandler (void)
 {
-	/*confirmEndTurn();
-  m = 0;
-*/
+	writeWarningMessage(0x0, true);
+	LPC_TIM1->IR = 1;			/* clear interrupt flag */
+	disable_timer(1);
   return;
 }
 

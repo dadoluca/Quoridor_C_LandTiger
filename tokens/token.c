@@ -65,6 +65,18 @@ void movePawns(int newMove, bool cancel){
 	}
 }
 
+void drawPossibleMove(int x, int y, bool cancel){
+	int i=0;
+	for(i=0;i<17;i++){	
+		if(cancel)
+			LCD_DrawLine(x, y , x+10, y, White);
+		else
+			LCD_DrawLine(x, y , x+10, y, Yellow);
+		y++;
+	}
+
+}
+
 bool checkPlayerNearOver(int xPawns, int yPawns, int positionEnemy) { // quando il nemico è sopra di me
 	x = positionEnemy & 0xFF;
 	y = positionEnemy & 0xFF00;
@@ -291,28 +303,32 @@ void markMoves(int lastMove, int*arrOfYellow, int* size, int positionEnemy){
 	yPawns = yPawns >> 8;
 	
 	if(!checkWallsOver(xPawns,yPawns) && !checkPlayerNearOver(xPawns, yPawns, positionEnemy)){
-		GUI_Text(xPawns, (yPawns-33), (uint8_t *) " ", White, Yellow);
+		drawPossibleMove(xPawns,yPawns-33,false);
+		//GUI_Text(xPawns, (yPawns-33), (uint8_t *) " ", White, Yellow);
 		result = (yPawns-33) << 8;
 		result = result + xPawns;
 		arrOfYellow[*size] =  result;
 		*size = *size + 1;
 	}
 	if(!checkWallsUnder(xPawns,yPawns) && !checkPlayerNearUnder(xPawns, yPawns, positionEnemy)){
-		GUI_Text(xPawns, (yPawns+33), (uint8_t *) " ", White, Yellow);
+		drawPossibleMove(xPawns,yPawns+33,false);
+		//GUI_Text(xPawns, (yPawns+33), (uint8_t *) " ", White, Yellow);
 		result = (yPawns+33) << 8;
 		result = result + xPawns;
 		arrOfYellow[*size] =  result;
 		*size = *size + 1;
 	} 
 	if(!checkWallsRight(xPawns,yPawns) && !checkPlayerNearRight(xPawns, yPawns, positionEnemy)){
-		GUI_Text((xPawns+33), yPawns, (uint8_t *) " ", White, Yellow);
+		drawPossibleMove(xPawns+33,yPawns,false);
+		//GUI_Text((xPawns+33), yPawns, (uint8_t *) " ", White, Yellow);
 		result = yPawns << 8;
 		result = result + (xPawns+33);
 		arrOfYellow[*size] =  result;
 		*size = *size + 1;
 	}
 	if(!checkWallsLeft(xPawns,yPawns) && !checkPlayerNearLeft(xPawns, yPawns, positionEnemy)){
-		GUI_Text((xPawns-33), yPawns, (uint8_t *) " ", White, Yellow);
+		drawPossibleMove(xPawns-33,yPawns,false);
+		//GUI_Text((xPawns-33), yPawns, (uint8_t *) " ", White, Yellow);
 		result = yPawns << 8;
 		result = result + (xPawns-33);
 		arrOfYellow[*size] =  result;
@@ -326,7 +342,8 @@ void markMoves(int lastMove, int*arrOfYellow, int* size, int positionEnemy){
 			x = positionEnemy & 0xFF;
 			y = positionEnemy & 0xFF00;
 			y = y >> 8;
-			GUI_Text(x, (y-33), (uint8_t *) " ", White, Yellow);
+			drawPossibleMove(x,y-33,false);
+			//GUI_Text(x, (y-33), (uint8_t *) " ", White, Yellow);
 			result = (y-33) << 8;
 			result = result + x;
 			arrOfYellow[*size] =  result;
@@ -376,7 +393,8 @@ void removeMarkedMoves(int*arrOfYellow, int* size){
 		x = arrOfYellow[i] & 0xFF;
 		y = arrOfYellow[i] & 0xFF00;
 		y = y >> 8;
- 		GUI_Text(x,y, (uint8_t *) "  ", White, White);
+		drawPossibleMove(x,y,true);
+ 		//GUI_Text(x,y, (uint8_t *) "  ", White, White);
 	}
 	
 	*size = 0;
@@ -417,7 +435,7 @@ void endGame(int position) {
 
 
 void pawnMoved() {
-	if(globalGameInfo.current_turn_player == 0) {
+	if(globalGameInfo.current_turn_player == PLAYER_0) {
 		if(m != 0) {
 			movePawns(m, true);
 			m = 0;

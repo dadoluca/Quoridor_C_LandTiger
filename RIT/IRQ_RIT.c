@@ -233,22 +233,25 @@ void EINT0_Actions(){
 					
 	//init and enable the timers for counting the 20 seconds
 	init_timer(0, 0x5F5E10);	/* 0,25 sec  */
+	init_timer(1, 0x17D7840);	/* 4 sec  */ 			//warning message duration
 	enable_timer(0);
 }
 
 /*KEY1 game actions ------------------------------------------------------------------*/
-void KEY1_Actions(){
-	removeMarkedMoves(array_possible_moves, &size);
-	pawnMoved();
-	
+void KEY1_Actions(){	
+	//checks walls finished
 	if(finishedWalls(globalGameInfo.current_turn_player)){
 		writeWarningMessage(globalGameInfo.current_turn_player, false);
+		disable_timer(1);
+		reset_timer(1);
+		enable_timer(1);//3 sec and than delete warning
+	}else{
+		removeMarkedMoves(array_possible_moves, &size);
+		pawnMoved();
+		current_default_beginning_wall = getNextPlaceableWall();	
+		draw_wall_wrapper(current_default_beginning_wall, false);
+		globalGameInfo.current_move_mode = WALL_MODE;
 	}
-	
-	current_default_beginning_wall = getNextPlaceableWall();	
-	draw_wall_wrapper(current_default_beginning_wall, false);
-
-	globalGameInfo.current_move_mode = WALL_MODE;
 }
 
 /*KEY2 game actions ------------------------------------------------------------------*/
@@ -312,7 +315,7 @@ void joystickMove(int direction){
 			currentWallMoveTmp = lastWallMoveTmp;
 			updateMovePlayer(&currentWallMoveTmp,PLAYER_1);
 			updateMoveInDirection(&currentWallMoveTmp,direction);//calculates the movment based on direction
-			if(checkPosition(currentWallMoveTmp) && checkPermanentPositionWall(globalGameInfo.last_move_p0, currentWallMoveTmp) && checkPermanentPositionWall(globalGameInfo.last_move_p1, currentWallMoveTmp)){
+			if(checkPosition(currentWallMoveTmp) && validateWallPlacement(globalGameInfo.last_move_p0, currentWallMoveTmp) && validateWallPlacement(globalGameInfo.last_move_p1, currentWallMoveTmp)){
 				draw_wall_wrapper(lastWallMoveTmp,true); //deletes old wall
 				draw_wall_wrapper(currentWallMoveTmp,false);//draws new wall
 				lastWallMoveTmp = currentWallMoveTmp;
@@ -347,7 +350,7 @@ void joystickMove(int direction){
 					} else {
 						m = lastMoveTmp;
 					}
-					if(m != globalGameInfo.last_move_p0) {
+					if(m != globalGameInfo.last_move_p0 &&!horizontal) {
 						markMoves(globalGameInfo.last_move_p0, array_possible_moves, &size, globalGameInfo.last_move_p1);
 						movePawns(m, false);
 					}
@@ -358,7 +361,7 @@ void joystickMove(int direction){
 			currentWallMoveTmp = lastWallMoveTmp;
 			updateMovePlayer(&currentWallMoveTmp,PLAYER_0);
 			updateMoveInDirection(&currentWallMoveTmp,direction);//calculates the movment based on direction
-			if(checkPosition(currentWallMoveTmp) && checkPermanentPositionWall(globalGameInfo.last_move_p0, currentWallMoveTmp) && checkPermanentPositionWall(globalGameInfo.last_move_p1, currentWallMoveTmp)){//TODO: sostituire true con il controllo sul posizionamento del muro
+			if(checkPosition(currentWallMoveTmp) && validateWallPlacement(globalGameInfo.last_move_p0, currentWallMoveTmp) && validateWallPlacement(globalGameInfo.last_move_p1, currentWallMoveTmp)){//TODO: sostituire true con il controllo sul posizionamento del muro
 				draw_wall_wrapper(lastWallMoveTmp,true); //deletes old wall
 				draw_wall_wrapper(currentWallMoveTmp,false);//draws new wall
 				lastWallMoveTmp = currentWallMoveTmp;
@@ -372,18 +375,22 @@ void confirmEndTurn(){
 	reset = true;	
 	reset_timer(1);
 	enable_timer(1);
-	if(globalGameInfo.current_move_mode == TOKEN_MODE){//pawn
-		if(globalGameInfo.current_turn_player == PLAYER_0) {//player 0
+	if(globalGameInfo.current_move_mode == TOKEN_MODE){
+	//----------------------------- TOKEN_MODE
+		if(globalGameInfo.current_turn_player == PLAYER_0) {
+		//-------------- PLAYER_0
 			globalGameInfo.last_move_p0 = m != 0 ? m : globalGameInfo.last_move_p0;
 			movePawns(globalGameInfo.last_move_p0,false);
 			markMoves(globalGameInfo.last_move_p1, array_possible_moves, &size, globalGameInfo.last_move_p0);
-		} else { //player 1
+		} else { 
+		//-------------- PLAYER_1
 			globalGameInfo.last_move_p1 = m != 0 ? m : globalGameInfo.last_move_p1;
 			movePawns(globalGameInfo.last_move_p1,false);
 			markMoves(globalGameInfo.last_move_p0, array_possible_moves, &size, globalGameInfo.last_move_p1);
 		}
 	}
-	else{//wall
+	else{
+	//----------------------------- WALL_MODE
 		globalGameInfo.last_move_p0 = m != 0 ? m : globalGameInfo.last_move_p0;
 		globalGameInfo.last_move_p1 = m != 0 ? m : globalGameInfo.last_move_p1;
 		if(lastWallMoveTmp != 0){
@@ -396,13 +403,14 @@ void confirmEndTurn(){
 		}
 		lastWallMoveTmp=0;
 		if(globalGameInfo.current_turn_player == PLAYER_0) {
+		//-------------- PLAYER_0
 			markMoves(globalGameInfo.last_move_p1, array_possible_moves, &size, globalGameInfo.last_move_p0);
 		} else {
+		//-------------- PLAYER_1
 			markMoves(globalGameInfo.last_move_p0, array_possible_moves, &size, globalGameInfo.last_move_p1);
 		}
-		//controllo per fine muri
 		updateCountWalls(globalGameInfo.current_turn_player);
-		writeWarningMessage(globalGameInfo.current_turn_player, true);		
+		//writeWarningMessage(globalGameInfo.current_turn_player, true);		
 	}
 	globalGameInfo.current_turn_player = globalGameInfo.current_turn_player==PLAYER_1 ? PLAYER_0 : PLAYER_1;
 	globalGameInfo.current_move_mode=TOKEN_MODE;

@@ -70,53 +70,43 @@ void draw_wall(int posX_start, int posY_start, int posX_end, int posY_end, int v
 	}
 }
 
-int totalPlayerWalls(int playerId) {//funzione che serve per contare quanti muri ci sono per player id
-	int count = 0;
-	int user;
-	int i;
-	for (i = 0; i < globalWalls.index; i++) {
-		user = globalWalls.wallsList[i] >> 24;
-		if(user == playerId) { count++; }
-	}
-	return count;
-}
 
 bool finishedWalls(int playerId){
-	if(totalPlayerWalls(playerId) >= MAX_WALLS_PER_USER){
-		NVIC_DisableIRQ(EINT1_IRQn);
-		return true;
+	int finished=false;
+	switch(playerId){
+		case PLAYER_0:
+			if(globalGameInfo.walls_placed_p0>=MAX_WALLS_PER_USER)finished=true;
+			break;
+		case PLAYER_1:
+			if(globalGameInfo.walls_placed_p1>=MAX_WALLS_PER_USER)finished=true;
+			break;
 	}
-	//LPC_SC->EXTINT &= (1 << 1);
-	NVIC_EnableIRQ(EINT1_IRQn);
-	return false;
+	return finished;
 }
 
 void writeWarningMessage(int playerId, bool cancel){
-	if(cancel){
-		GUI_Text(42, 3, (uint8_t *) "                       ", White, White);
-		return;
-	}
-	//Pulisce da eventuali scritte e poi scrive
-	GUI_Text(42, 3, (uint8_t *) "                       ", White, White);
+	//clears
+	GUI_Text(30, 4, (uint8_t *) "                         ", White, White);
+	if(cancel)return;
+	//writes
 	if(playerId == PLAYER_0){
-		GUI_Text(42, 3, (uint8_t *) "Player 1 reached 8 walls", Black, Green);
+		GUI_Text(30, 4, (uint8_t *) "Player 1 reached 8 walls", Black, Green);
 	} else if(playerId == PLAYER_1){
-		GUI_Text(42, 3, (uint8_t *) "Player 2 reached 8 walls", White, Blue);
+		GUI_Text(30, 4, (uint8_t *) "Player 2 reached 8 walls", White, Blue);
 	}
 }
 
 
 void updateCountWalls(int playerId){
 	char str[1];
-	int remainingWalls = MAX_WALLS_PER_USER;
-	if(playerId == 0){
-		remainingWalls = remainingWalls - totalPlayerWalls(0);
-		sprintf(str, "%d", remainingWalls);
+	if(playerId == PLAYER_0){
+		globalGameInfo.walls_placed_p0++;		//upgrade walls placed
+		sprintf(str, "%d", MAX_WALLS_PER_USER - globalGameInfo.walls_placed_p0);
 		GUI_Text(35, 298, (uint8_t *) " ", Black, White);
 		GUI_Text(35, 298, (uint8_t *) str, Black, White);
-	} else if(playerId == 1){
-		remainingWalls = remainingWalls - totalPlayerWalls(1);
-		sprintf(str, "%d", remainingWalls);
+	} else if(playerId == PLAYER_1){
+		globalGameInfo.walls_placed_p1++;		//upgrade walls placed
+		sprintf(str, "%d", MAX_WALLS_PER_USER - globalGameInfo.walls_placed_p1);
 		GUI_Text(195, 298, (uint8_t *) " ", Black, White);		
 		GUI_Text(195, 298, (uint8_t *) str, Black, White);
 	}
