@@ -43,5 +43,3 @@ This game is implemented in Keil µVision, using the LANDTIGER emulator and the 
 - `victoryStrategy`: Exclusively manages player trapping to prevent placing walls that block a player's victory. It relies on a 0, 1, 2 board matrix. For each wall placement attempt, an algorithm works on this matrix starting from the token's position and explores all reachable cells (with wall checks) and checks if the token reaches the solution row. (cell values: 0 unexplored, 1 reached, 2 explored every neighbor).
 
 This implementation is developed in C.
-```
-
